@@ -1,0 +1,19 @@
+# Welcome to Serverless!
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: myService
+
+provider:
+  name: aws
+  runtime: nodejs4.3
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: users/create
+          method: get
