@@ -11,9 +11,52 @@ provider:
   runtime: nodejs4.3
 
 functions:
-  hello:
-    handler: handler.hello
+  list:
+    handler: handler.list
     events:
       - http:
-          path: users/create
+          path: list
           method: get
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: false
+resources:
+  Resources:
+    TempDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        TableName: tempdb
+        AttributeDefinitions:
+          -
+            AttributeName: timeStamp
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: timeStamp
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: TempDynamoDbTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+                # - dynamodb:PutItem
+              Resource: arn:aws:dynamodb:ap-southeast-2:*:table/tempdb
+        Roles:
+          - Ref: IamRoleLambdaExecution
